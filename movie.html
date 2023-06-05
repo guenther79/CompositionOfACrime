@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      :root {
+        --border-size: 0.125rem;
+        --color-primary: white;
+        --color-secondary: black;
+        --color-tertiary: dodgerblue;
+        --flex-growth: 2;
+      }
+
+      body {
+        background-color: black;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      .full-size {
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        height: 100%;
+        aspect-ratio: 16 / 9;
+        position: absolute;
+      }
+
+      video {
+        width: 99%;
+        height: 99%;
+      }
+
+      video:focus {
+        outline: none !important;
+      }
+
+      .controls {
+        position: absolute;
+        right: 50%;
+        bottom: 5%;
+        transform: translate(50%, 0);
+        width: 80%;
+      }
+
+      .back {
+        border: solid black;
+        color: white;
+        background-color: black;
+        margin-top: 10px;
+      }
+
+      .choices {
+        display: flex;
+        width: 100%;
+        box-shadow: rgba(0, 0, 0, 0.1) 4px 4px;
+      }
+
+      .choices .choice {
+        flex-grow: 1;
+        width: 20%;
+        cursor: pointer;
+        padding: 0.889rem 1rem 1rem;
+        border: var(--border-size) solid black;
+        color: var(--color-secondary);
+        background-color: var(--color-primary);
+        font-size: 1.5rem;
+        font-family: Elephant;
+        /* font-family: Garamond; */
+        text-shadow: rgba(0, 0, 0, 0.1) 2px 2px;
+        transition: flex-grow 250ms cubic-bezier(0.215, 0.61, 0.355, 1);
+      }
+
+      .choices .choice + .choice {
+        border-left: var(--border-size) solid black;
+        margin-left: calc(var(--border-size) * -1);
+      }
+
+      .choices .choice:hover,
+      .choices .choice:focus {
+        flex-grow: var(--flex-growth);
+        color: white;
+        outline: none;
+        text-shadow: none;
+        background-color: var(--color-secondary);
+      }
+
+      .choices .choice:focus {
+        outline: var(--border-size) dashed var(--color-primary);
+        outline-offset: calc(var(--border-size) * -3);
+      }
+
+      .choices:hover .choice:focus:not(:hover) {
+        flex-grow: 1;
+        color: var(--color-secondary);
+        background-color: var(--color-primary);
+        outline-color: var(--color-tertiary);
+      }
+
+      .choices .choice:active {
+        transform: translateY(var(--border-size));
+      }
+    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script>
+
+      let video_box = null;
+      let video = null;
+      let source = null;
+      let choice_box = null;
+      let video_choice = null;
+      let source_choice = null;
+      let controls = null;
+      let menu = null;
+      let button_1 = null;
+      let button_2 = null;
+      let button_repeat = null;
+      let button_back = null;
+      let onclick_1 = null;
+      let onclick_2 = null;
+      let onback = null;
+      let onrepeat = null;
+
+      // let clip_0         = 'assets/clip_0.mp4';
+      // let clip_1         = 'assets/clip_1.mp4';
+      // let clip_1_choice  = 'assets/clip_1__choice.mp4';
+      // let clip_21        = 'assets/clip_21.mp4';
+      // let clip_21_choice = 'assets/clip_21__choice.mp4';
+      // let clip_22        = 'assets/clip_22.mp4';
+      // let clip_22_choice = 'assets/clip_22__choice.mp4';
+      // let clip_222       = 'assets/clip_222.mp4';
+      // let clip_223       = 'assets/clip_223.mp4';
+      // let clip_2121      = 'assets/clip_2121.mp4';
+      // let clip_2123      = 'assets/clip_2123.mp4';
+
+      let clip_0         = 'https://drive.google.com/uc?export=download&id=1PGaJAVBDFAZJ3iQaPrEXE0e-oQRX-6FY&confirm=t';
+      let clip_1         = 'https://drive.google.com/uc?export=download&id=1vYEyEJdxZ9Kg1lkgRHdw3vuDjf5Ayn8R&confirm=t';
+      let clip_1_choice  = 'https://drive.google.com/uc?export=download&id=1kYy9lQkz1PAylYniEvgBFOfDBX4f_CcM&confirm=t';
+      let clip_21        = 'https://drive.google.com/uc?export=download&id=1FU-6ovc1299GOXEu7usYa_oWLG39-aHi&confirm=t';
+      let clip_21_choice = 'https://drive.google.com/uc?export=download&id=1UAVdMjGuBiVnH1JHtrYazg6Mc4olY00A&confirm=t';
+      let clip_22        = 'https://drive.google.com/uc?export=download&id=1PfXlRvWTZQa6MsiAoM8DgIC2GiQo2UEw&confirm=t';
+      let clip_22_choice = 'https://drive.google.com/uc?export=download&id=1wHqc9yFsPAx9coNtnhADv-bfYCOaBK7L&confirm=t';
+      let clip_222       = 'https://drive.google.com/uc?export=download&id=1PFI_08yVL8quu09XLot2QPX6QEaQjIxH&confirm=t';
+      let clip_223       = 'https://drive.google.com/uc?export=download&id=1umMcc7vD0qaBpFhPPQKGlH87fnOjIA6L&confirm=t';
+      let clip_2121      = 'https://drive.google.com/uc?export=download&id=1x3kW_VIIbm7Yl1OeVljIR79NzKKVlOAN&confirm=t';
+      let clip_2123      = 'https://drive.google.com/uc?export=download&id=1xNhnwxsgLkl3BW9jF27kA2ZuqsbG5tD9&confirm=t';
+
+      window.onload = function() {
+        video_box = document.getElementById("video-box");
+        video = document.getElementById("video");
+        source = document.getElementById("source");
+        choice_box = document.getElementById("choice-box");
+        video_choice = document.getElementById("video-choice");
+        source_choice = document.getElementById("source-choice");
+        controls = document.getElementById("controls");
+        menu = document.getElementById("menu");
+        button_1 = document.getElementById("choice-1");
+        button_2 = document.getElementById("choice-2");
+        button_repeat = document.getElementById("repeat");
+        button_back = document.getElementById("back");
+
+        video.addEventListener('play', request_full_screen);
+        video.addEventListener('ended', load_choice);
+
+        play_title();
+      };
+
+      function request_full_screen() {
+        var elem = document.documentElement;
+        if (elem.requestFullscreen) {
+          elem.requestFullscreen();
+        } else if (elem.msRequestFullscreen) {
+          elem.msRequestFullscreen();
+        } else if (elem.mozRequestFullScreen) {
+          elem.mozRequestFullScreen();
+        } else if (elem.webkitRequestFullscreen) {
+          elem.webkitRequestFullscreen();
+        }
+      };
+
+      function play_title() {
+        console.log('play_title');
+
+        button_1.innerText = "Play";
+        button_1.style.display = "";
+        onclick_1 = play_1;
+
+        button_2.innerText = "";
+        button_2.style.display = "none";
+        onclick_2 = null;
+
+        button_repeat.style.display = "none";
+        onrepeat = null;
+
+        button_back.style.display = "none";
+        onback = null;
+
+        load_clip(true, clip_0, clip_0);
+      }
+
+      function play_1() {
+        console.log('play_1');
+
+        button_1.innerText = "Look for clues";
+        button_1.style.display = "";
+        onclick_1 = play_21;
+
+        button_2.innerText = "Interview the witnesses";
+        button_2.style.display = "";
+        onclick_2 = play_22;
+
+        button_repeat.style.display = "";
+        onrepeat = play_1;
+
+        button_back.style.display = "";
+        onback = play_title;
+
+        load_clip(false, clip_1, clip_1_choice);
+      }
+
+      function play_21() {
+        console.log('play_21');
+
+        button_1.innerText = "Turn yourself in";
+        button_1.style.display = "";
+        onclick_1 = play_2121;
+
+        button_2.innerText = "Steal it";
+        button_2.style.display = "";
+        onclick_2 = play_2123;
+
+        button_repeat.style.display = "";
+        onrepeat = play_21;
+
+        button_back.style.display = "";
+        onback = play_1;
+
+        load_clip(false, clip_21, clip_21_choice);
+      }
+
+      function play_22() {
+        console.log('play_22');
+
+        button_1.innerText = "Devin";
+        button_1.style.display = "";
+        onclick_1 = play_222;
+
+        button_2.innerText = "Kerry";
+        button_2.style.display = "";
+        onclick_2 = play_223;
+
+        button_repeat.style.display = "";
+        onrepeat = play_22;
+
+        button_back.style.display = "";
+        onback = play_1;
+
+        load_clip(false, clip_22, clip_22_choice);
+      }
+
+      function play_2121() {
+        console.log('play_2121');
+
+        button_1.innerText = "";
+        button_1.style.display = "none";
+        onclick_1 = null;
+
+        button_2.innerText = "";
+        button_2.style.display = "none";
+        onclick_2 = null;
+
+        button_repeat.style.display = "";
+        onrepeat = play_2121;
+
+        button_back.style.display = "";
+        onback = play_21;
+
+        load_clip(false, clip_2121, null);
+      }
+
+      function play_2123() {
+        console.log('play_2123');
+
+        button_1.innerText = "";
+        button_1.style.display = "none";
+        onclick_1 = null;
+
+        button_2.innerText = "";
+        button_2.style.display = "none";
+        onclick_2 = null;
+
+        button_repeat.style.display = "";
+        onrepeat = play_2123;
+
+        button_back.style.display = "";
+        onback = play_21;
+
+        load_clip(false, clip_2123, null);
+      }
+
+      function play_222() {
+        console.log('play_222');
+
+        button_1.innerText = "";
+        button_1.style.display = "none";
+        onclick_1 = null;
+
+        button_2.innerText = "";
+        button_2.style.display = "none";
+        onclick_2 = null;
+
+        button_repeat.style.display = "";
+        onrepeat = play_222;
+
+        button_back.style.display = "";
+        onback = play_22;
+
+        load_clip(false, clip_222, null);
+      }
+
+      function play_223() {
+        console.log('play_223');
+
+        button_1.innerText = "";
+        button_1.style.display = "none";
+        onclick_1 = null;
+
+        button_2.innerText = "";
+        button_2.style.display = "none";
+        onclick_2 = null;
+
+        button_repeat.style.display = "";
+        onrepeat = play_223;
+
+        button_back.style.display = "";
+        onback = play_22;
+
+        load_clip(false, clip_223, null);
+      }
+
+      function load_clip(is_title, clip_src, choice_src) {
+        console.log('load_clip', is_title, clip_src, choice_src);
+        controls.style.bottom = is_title ? "30%" : "5%";
+        video_box.style.display = "";
+        video.setAttribute('controls', '');
+        menu.style.display = "none";
+        if (choice_src == null) {
+          choice_box.style.display = "none";
+          video.removeEventListener('ended', load_choice);
+          video.addEventListener('ended', set_end);
+        } else {
+          choice_box.style.display = "";
+          source_choice.setAttribute('src', choice_src);
+          video_choice.load();
+        }
+        source.setAttribute('src', clip_src);
+        video.load();
+      }
+
+      function load_choice() {
+        console.log('load_choice');
+        video_box.style.display = "none";
+        menu.style.display = "block";
+        video_choice.play();
+      }
+
+      function set_end() {
+        console.log('set_end');
+        video_box.style.display = "";
+        video.removeAttribute('controls');
+        menu.style.display = "block";
+      }
+
+    </script>
+  </head>
+
+  <body>
+
+    <div id="video-page">
+      <div class="full-size" id="video-box">
+        <video id="video" autoplay controls>
+          <source id="source" type="video/mp4" />
+        </video>
+      </div>
+
+      <div class="full-size" id="menu">
+        <div class="full-size" id="choice-box">
+          <video id="video-choice" autoplay loop>
+            <source id="source-choice" type="video/mp4" />
+          </video>
+        </div>
+
+        <div class="controls", id="controls">
+          <div class="choices">
+            <button class="choice" id="choice-1" onclick="onclick_1()"></button>
+            <button class="choice" id="choice-2" onclick="onclick_2()"></button>
+          </div>
+          <div class="navigate">
+            <button class="back" id="repeat" onclick="onrepeat()" title="Repeat scene">↻</button>
+            <button class="back" id="back" onclick="onback()" title="Previous scene">←</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </body>
+</html>
