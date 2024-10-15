@@ -23,7 +23,7 @@ body{
 
 .white{
   border: 1px solid black;
-  width: 60px;
+  width: 10%;
   height: 60px;
   background-color:white;
   float:left;
@@ -31,14 +31,14 @@ body{
 
 .black{
   border: 1px solid black;
-  width: 60px;
+  width: 10%;
   height: 60px;
   background-color:#787878;
   float:left;
 }
 
 .clear{
-  clear:both; 
+  clear:both;
 }
 
 body {
